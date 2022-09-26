@@ -72,10 +72,15 @@ class Blockchain {
                 block.time = new Date().getTime().toString().slice(0, -3);
                 block.hash = SHA256(JSON.stringify(block)).toString();
 
-                self.chain.push(block);
-                self.height++;
-                resolve(block);
-            } catch (error){
+                let errorsLog = await self.validateChain();
+                if (errorsLog.length === 0) {
+                    self.chain.push(block);
+                    self.height++;
+                    resolve(block);
+                } else {
+                    reject(errorsLog);
+                }
+            } catch (error) {
                 reject(error);
             }
         });
@@ -200,7 +205,26 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            
+            let promises = [];
+            self.chain.forEach((block, id) => {
+                promises.push(block.validate());
+                if (block.height > 0) {
+                    let previousBlock = self.chain[id - 1];
+                    if (block.previousBlockHash !== previousBlock.hash) {
+                        errorLog.push(`Previous block hash of block ${id} = ${block.previousBlockHash}, and previous block hash = ${previousBlock.hash}`);
+                    }
+                }
+            });
+            Promise.all(promises).then(value => {
+                console.log(value);
+                value.forEach((result, id) => {
+                    if(!result){
+                        errorLog.push(`Hash ${self.chain[id].hash} of block ${id} is invalid`);
+                    }
+                });
+                console.log(errorLog)
+                resolve(errorLog);
+            })
         });
     }
 
