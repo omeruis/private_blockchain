@@ -177,7 +177,16 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            
+            self.chain.forEach(async (block) => {
+                let starData = null;
+                starData = await block.getBData();
+                if(starData != null){
+                    if(starData.address === address){
+                        stars.push(starData);
+                    }
+                }
+            });
+            resolve(stars);
         });
     }
 
