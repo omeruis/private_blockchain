@@ -32,7 +32,7 @@ class ApplicationServer {
 	}
 
 	initExpress() {
-		this.app.set("port", 8000);
+		this.app.set("port", 3000);
 	}
 
 	initExpressMiddleWare() {
